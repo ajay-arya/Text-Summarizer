@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, flash, jsonify
 from werkzeug.utils import secure_filename
 import os
 from optimize import store, convertFile
-from summarize import generateSummary
 
 UPLOAD_FOLDER = 'uploadedFiles'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'doc', 'docx'])
@@ -23,7 +22,9 @@ def Index():
 
 @app.route('/upload', methods=['POST'])
 def upload():
+    print(request)
     file = request.files['inputFile']
+    line = request.data['lines']
     if file.filename == '':
         flash('No selected file')
         return redirect(request.url)
@@ -32,18 +33,20 @@ def upload():
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         print(filename)
-        # convertFile(filename)
+        convertFile(filename, line)
         return "jsonify({file: 'OK'})"
     else:
         return 'Opps!!, something went wrong.'
 
 
-@app.route('/getSummary')
-def summarizedFile():
-    optimizedFile = './files/summ.txt'
-    summary = generateSummary(optimizedFile, 4)
-    return summary
-    # return jsonify(data), 200
+# @app.route('/getSummary', methods=['POST'])
+# def summarizedFile():
+#     lines = 4
+#     data = request.get_json()
+#     lines = data['lines']
+#     optimizedFile = './files/summ.txt'
+#     summary = generateSummary(optimizedFile, lines)
+#     return jsonify({'Status': 'Success!', 'Summary': summary})
 
 
 if __name__ == "__main__":

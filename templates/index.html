@@ -7,23 +7,23 @@
     <title>Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" media="screen" href="main.css">
-    <script src="main.js"></script>
 </head>
 
 <body>
-    <form action="http://localhost:5000/upload" method="post" enctype = "multipart/form-data">
-        Input File :
-        <input name="inputFile" type="file">
+    <hr>
+    <form action="http://localhost:5000/upload" method="post" enctype="multipart/form-data">
+        <div>
+            Input File :
+            <input name="inputFile" type="file">
+        </div>
+        <div>
+            Approximate number of lines:
+            <input type="number" name="lines">
+        </div>
         <button type="submit">send</button>
     </form>
     <hr>
     <br>
-    <div>
-        <form action="http://localhost:5000/getSummary" method="get">
-            Get Summary :
-            <button type = "submit"> Get </button>
-        </form>
-    </div>
 </body>
 
 </html>
