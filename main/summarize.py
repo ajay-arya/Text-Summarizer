@@ -72,4 +72,4 @@ def generateSummary(fileName, top_n=5):
 
     print("Summarize Text: \n", ". ".join(summarizeText))
 
-generateSummary( "summ.txt", 5)
+# generateSummary( "../files/summ.txt", 5)

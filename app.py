@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, flash
 from werkzeug.utils import secure_filename
 import os
-from optimize import store
+from optimize import store, convertFile
 
 UPLOAD_FOLDER = 'uploadedFiles'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'doc', 'docx'])
@@ -22,19 +22,19 @@ def Index():
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    # file = request.files['inputFile']
-
-    # return file.filename
     file = request.files['inputFile']
     if file.filename == '':
         flash('No selected file')
         return redirect(request.url)
+
     if file and allowedFile(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        convertFile(filename)
         return file.filename
     else:
         return render_template('fail.html')
+
 
 @app.route('/getSummary')
 def summarizedFile():
