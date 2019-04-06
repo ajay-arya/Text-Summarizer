@@ -20,7 +20,7 @@ def getSummary(line):
 
 def modify(text):
     text = text.replace('\n', ' ').replace('\r', '').replace('  ', ' ')
-    text = re.sub('[^ a-zA-Z0-9.]', '', text)
+    text = re.sub('[^ .a-zA-Z0-9]', '', text)
     text = re.sub(' +', ' ', text)
     return(store(text))
 
@@ -40,4 +40,4 @@ def convertFile(filename, line):
         getSummary(line)
 
 
-convertFile('./uploadedFiles/Semiar_Synopsis.pdf', 4)
+# convertFile('./uploadedFiles/Semiar_Synopsis.pdf', 4)
