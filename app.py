@@ -38,7 +38,7 @@ def upload():
 
 @app.route('/getSummary')
 def summarizedFile():
-    return store()
+    return 'haha'
 
 
 if __name__ == "__main__":
