@@ -26,4 +26,4 @@ def convertFile(filename):
         modify(text)
 
 
-convertFile('./uploadedFiles/sample1.pdf')
+# convertFile('./uploadedFiles/sample1.pdf')
