@@ -1,80 +1,95 @@
-import nltk
+# Importing packages
 from nltk.corpus import stopwords
-from nltk.cluster.util import cosine_distance
-import numpy as np
-import networkx as nx
+from nltk.tokenize import word_tokenize, sent_tokenize
+import nltk
 
 
-def read_article(fileName):
-    file = open(fileName, "r")
-    filedata = file.readlines()
-    article = filedata[0].split(". ")
-    sentences = []
+# Declaring Porter Stemmer
+from nltk.stem import PorterStemmer
+ps = PorterStemmer()
 
-    for sentence in article:
-        sentences.append(sentence.replace("[^a-zA-Z]", " ").split(" "))
-    sentences.pop()
+# Reading the file
 
-    return sentences
+file = open('./files/summ.txt', 'r') 
+text = file.read()
 
-
-def sentenceSimilarity(sent1, sent2, stopwords=None):
-    if stopwords is None:
-        stopwords = []
-
-    sent1 = [w.lower() for w in sent1]
-    sent2 = [w.lower() for w in sent2]
-
-    allWords = list(set(sent1 + sent2))
-
-    vector1 = [0] * len(allWords)
-    vector2 = [0] * len(allWords)
-
-    for w in sent1:
-        if w in stopwords:
-            continue
-        vector1[allWords.index(w)] += 1
-
-    for w in sent2:
-        if w in stopwords:
-            continue
-        vector2[allWords.index(w)] += 1
-
-    return 1 - cosine_distance(vector1, vector2)
+# Defining Stopwords
+stopWords = set(stopwords.words("english"))
 
 
-def buildSimilarityMatrix(sentences, stopWords):
-    similarityMatrix = np.zeros((len(sentences), len(sentences)))
+# Tokenizing text to word and using Porter Stemmer to stem to root word
+words = word_tokenize(text)
+for word in words:
+    ps.stem(word)
 
-    for idx1 in range(len(sentences)):
-        for idx2 in range(len(sentences)):
-            if idx1 == idx2:
-                continue
-            similarityMatrix[idx1][idx2] = sentenceSimilarity(
-                sentences[idx1], sentences[idx2], stopWords)
+import re as re
+# Creating frequency table of words
+freqTable = dict()
+for word in words:
+    word = word.lower()
+    if word in stopWords:
+        continue
+    if word in freqTable:
+        freqTable[word] += 1
+    else:
+        freqTable[word] = 1
 
-    return similarityMatrix
+
+        
+#***************************
+# To find weighted frequency      
+max_freq = max(freqTable.values())
+
+for word in freqTable.keys():  
+    freqTable[word] = (freqTable[word]/max_freq)        
+#***************************        
+        
+# Tokenizing The text to sentences    
+sentences = sent_tokenize(text)
+sentenceRank = dict()
 
 
-def generateSummary(fileName, top_n=5):
-    stopWords = stopwords.words('english')
-    summarizeText = []
+# Ranking the sentences
+word_count = 0
+for sentence in sentences:
+    for word, freq in freqTable.items():
+        if word in sentence.lower():
+            word_count = word_count + 1
+            if sentence in sentenceRank:
+                sentenceRank[sentence] += freq
+            else:
+                sentenceRank[sentence] = freq
+    sentenceRank[sentence] = sentenceRank[sentence]
+    word_count = 0
 
-    sentences = read_article(fileName)
 
-    sentenceSimilarityMartix = buildSimilarityMatrix(sentences, stopWords)
+# Sorting sentence and rank dictionary 
+import operator
+sentenceRank_list = sorted(sentenceRank.items(), key=operator.itemgetter(1))
+sentenceRank_list = sentenceRank_list[::-1]
 
-    sentenceSimilarityGraph = nx.from_numpy_array(sentenceSimilarityMartix)
-    scores = nx.pagerank(sentenceSimilarityGraph)
 
-    rankedSentence = sorted(
-        ((scores[i], s) for i, s in enumerate(sentences)), reverse=True)
-    # print("Indexes of top rankedSentence order are ", rankedSentence)
+# Generating and printing the Summary
+summary = ''
+num_of_sentences = 5
+for q in range(num_of_sentences):
+    summary += " " + sentenceRank_list[q][0]
+print(summary)
 
-    for i in range(top_n):
-        summarizeText.append(" ".join(rankedSentence[i][1]))
 
-    return(''.join(summarizeText))
-    # print("Summarize Text: \n", ". ".join(summarizeText))
+# Threshold_based = False
+# if(Threshold_based):
+# sumValues = 0
+#     for sentence in sentenceRank:
+#         sumValues += sentenceRank[sentence]
+#         print(sentenceRank[sentence])
 
-# generateSummary( "../files/summ.txt", 5)
+#     # Average value of a sentence from original text
+#     average = int(sumValues / len(sentenceRank))
+#     print(average)
+
+#     summary = ''
+#     for sentence in sentences:
+#         if (sentence in sentenceRank) and (sentenceRank[sentence] > 1.5*average):
+#             summary += " " + sentence
+#     print(summary)
