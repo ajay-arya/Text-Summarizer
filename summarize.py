@@ -9,9 +9,9 @@ from nltk.stem import PorterStemmer
 ps = PorterStemmer()
 
 # Reading the file
-
-file = open('./files/summ.txt', 'r') 
-text = file.read()
+def genatateSummary(fileName):
+    file = open('./files/summ.txt', 'r') 
+    text = file.read()
 
 # Defining Stopwords
 stopWords = set(stopwords.words("english"))
