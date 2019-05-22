@@ -1,13 +1,4 @@
 from flask import Flask, render_template, request, redirect, flash, jsonify
-# try:
-#     from flask.ext.cors import CORS
-# except ImportError:
-#     import os
-#     parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-#     os.sys.path.insert(0, parentdir)
-
-#     from flask.ext.cors import CORS
-
 from werkzeug.utils import secure_filename
 import os
 
@@ -23,17 +14,18 @@ SumariFileName = ''
 preProcessedData = ''
  
 app = Flask(__name__)
+# app = Flask(__name__)
 
-app.config['CORS_ALLOW_HEADERS'] = "Content-Type"
-# app.config['CORS_RESOURCES'] = {r"/api/*": {"origins": "*"}}
+# app.config['CORS_ALLOW_HEADERS'] = "Content-Type"
+# # app.config['CORS_RESOURCES'] = {r"/api/*": {"origins": "*"}}
 
-cors = CORS(app)
+# CORS(app)
 
 # cors = CORS(app)
-# cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
-# app.config['CORS_HEADERS'] = 'Content-Type'
+app.config['CORS_HEADERS'] = 'Content-Type'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 def allowedFile(filename):
@@ -46,6 +38,15 @@ def Index():
     return 'jasjkdhaksjdhk'
     # return jsonify({'text': 'OK'})
 
+@app.route('/api/v1/test', methods=['POST'])
+def test():
+    try:
+        # data = request.get_json()
+        # temp = wiki_scrape(data['link'])
+        return jsonify({'Status': 'Success!', 'recived': "temp['link']"})
+    except Exception as e:
+        return jsonify({'Status': 'fail', 'error': e})
+
 
 # @app.route('/getSummary', methods=['POST'])
 # def summarizedFile():
@@ -57,17 +58,18 @@ def Index():
 #     return jsonify({'Status': 'Success!', 'Summary': summary})
 
 # Scaping wiki page
-@app.route('/api/scrapeWiki', methods=['POST'])
+@app.route('/api/v1/scrapeWiki', methods=['POST'])
 def scraper():
     try:
         data = request.get_json()
+        # scrapeText = wiki_scrape(data['link'])
         scrapeText = wiki_scrape(data['link'])
         return jsonify({'Status': 'Success!', 'recived': data['link'], 'scrapeText': scrapeText})
     except Exception as e:
         return jsonify({'Status': 'fail', 'error': e})
 
 # Pdf File Upload and generate Summari
-@app.route('/api/upload', methods=['POST'])
+@app.route('/api/v1/upload', methods=['POST'])
 def upload():
     try:
         global SumariFileName
@@ -91,7 +93,7 @@ def upload():
         return json.dumps({'Status': 'fail', 'error': e})
 
 # Send PerProcessed data
-@app.route('/api/getPreprocessed', methods=['POST'])
+@app.route('/api/v1/getPreprocessed', methods=['POST'])
 def sendPreProcessed():
     try:
         global preProcessedData
@@ -102,17 +104,32 @@ def sendPreProcessed():
     except Exception as e:
         return json.dumps({'Status': 'fail', 'error': e})
 
+# reseve range test
+@app.route('/api/v1/ranges', methods=['POST'])
+def rangess():
+    try:
+        global SumariFileName
+        global preProcessedData
+        SumariFileName = './uploadedFiles/mgessaysandreflections.pdf'
+        data = request.get_json()
+        print(data)
+        # scrapeText = wiki_scrape(data['link'])
+        # lines = convertFile(SumariFileName, data['line'])
+        return json.dumps({'Status': 'success', 'recived': 'yes'})
+    except Exception as e:
+        return json.dumps({'Status': 'fail', 'error': e})
+
 # Accept total range
-@app.route('/api/range', methods=['POST'])
-@cross_origin()
+@app.route('/api/v1/range', methods=['POST'])
+# @cross_origin()
 def perProcessing():
     try:
         global SumariFileName
         global preProcessedData
-        # data = request.get_json()
-        # line = wiki_scrape(data['range'])
-        line = request.data
-        preProcessedData = convertFile(SumariFileName, line)
+        data = request.get_json()
+        line = wiki_scrape(data['lines'])
+        # line = request.data
+        # preProcessedData = convertFile(SumariFileName, line)
         if summary == 'error':
             return json.dumps({'Status': 'fail', 'error': 'some error'})
         else:    
