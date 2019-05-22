@@ -1,29 +1,24 @@
 import PyPDF2
 import re
+# from summarize_old import generateSummary
 from summarize import generateSummary
 
 
-def store(text):
-    print(text)
-    summaryFile = open('./files/summ.txt', 'w')
+def store(text, filePath):
+    # print(text)
+    summaryFile = open(filePath, 'w')
     summaryFile.write(text)
     summaryFile.close()
-    print()
-    print()
     return True
 
-
-def getSummary(line):
-    summary = generateSummary('./files/summ.txt', line)
-    print(summary)
-
+def getSummari(line):
+    summary = generateSummary('/./files/summ.txt', line)
 
 def modify(text):
     text = text.replace('\n', ' ').replace('\r', '').replace('  ', ' ')
     text = re.sub('[^ .a-zA-Z0-9]', '', text)
     text = re.sub(' +', ' ', text)
-    return(store(text))
-
+    return(store(text, './files/preprosed.txt'))
 
 def convertFile(filename, line):
     object = open(filename, 'rb')
@@ -34,10 +29,21 @@ def convertFile(filename, line):
     for i in range(totalPages):
         page = reader.getPage(i)
         text += page.extractText()
-    print(text)
+    # print(text)
+    temp = False
     temp = modify(text)
     if(temp):
-        getSummary(line)
+        print('SENDING INVOKING MODEL')
+        summari = getSummari(line)
+        final = store(summari, './files/final.txt')
+        print()
+        print('**********************final**********************')
+        print(final)
+        print('**********************final**********************')
+        return summari
+    else:
+        return 'error'
+
 
 
 # convertFile('./uploadedFiles/Semiar_Synopsis.pdf', 4)
