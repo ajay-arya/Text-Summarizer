@@ -16,6 +16,7 @@ text = ''
 
 
 def generateSummary(fileName, lines):
+    print('in summarry////////////*****************')
     global text
     file = open(fileName, 'r')
     text = file.read()
@@ -84,3 +85,6 @@ def summarizer(lines):
     # print(summary)
     
     return summary
+
+# data = generateSummary('./files/preprosed.txt', 5)
+# print(data)

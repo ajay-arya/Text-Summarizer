@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, flash, jsonify
 from werkzeug.utils import secure_filename
 import os
 
-from optimize import store, convertFile
+from optimize import store, convertFile, optimizeWiki
 from flask_cors import CORS, cross_origin
 from wiki_scraper import wiki_scrape
 import json
@@ -10,8 +10,10 @@ import json
 UPLOAD_FOLDER = 'uploadedFiles'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'doc', 'docx'])
 
-SumariFileName = ''
+SummaryFileName = ''
 preProcessedData = ''
+FinalSummary = ''
+scrapeText = ''
  
 app = Flask(__name__)
 # app = Flask(__name__)
@@ -61,9 +63,11 @@ def test():
 @app.route('/api/v1/scrapeWiki', methods=['POST'])
 def scraper():
     try:
+        global scrapeText
         data = request.get_json()
         # scrapeText = wiki_scrape(data['link'])
         scrapeText = wiki_scrape(data['link'])
+
         return jsonify({'Status': 'Success!', 'recived': data['link'], 'scrapeText': scrapeText})
     except Exception as e:
         return jsonify({'Status': 'fail', 'error': e})
@@ -72,7 +76,7 @@ def scraper():
 @app.route('/api/v1/upload', methods=['POST'])
 def upload():
     try:
-        global SumariFileName
+        global SummaryFileName
         file = request.files['inputFile']
         # line = request.data['lines']
         line = 4
@@ -83,8 +87,7 @@ def upload():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             name = './uploadedFiles/' + filename
-            SumariFileName = name
-            print('***NAME***' + SumariFileName)
+            SummaryFileName = name
             # convertFile(name, line)
             return json.dumps({'Status': 'success', 'recived': 'yes'})
         else:
@@ -93,47 +96,69 @@ def upload():
         return json.dumps({'Status': 'fail', 'error': e})
 
 # Send PerProcessed data
-@app.route('/api/v1/getPreprocessed', methods=['POST'])
+@app.route('/api/v1/getDetails', methods=['POST'])
 def sendPreProcessed():
     try:
         global preProcessedData
+        global FinalSummary
         if (preProcessedData != ''):
-            return json.dumps({'Status': 'success', 'preprocessed': preProcessedData})
+            return json.dumps({'Status': 'success', 'preprocessed': preProcessedData, 'summary': FinalSummary})
         else:
             return json.dumps({'Status': 'fail', 'error': 'no data avilable'})
     except Exception as e:
         return json.dumps({'Status': 'fail', 'error': e})
 
-# reseve range test
-@app.route('/api/v1/ranges', methods=['POST'])
+@app.route('/api/v1/wikiRange', methods=['POST'])
 def rangess():
     try:
-        global SumariFileName
-        global preProcessedData
-        SumariFileName = './uploadedFiles/mgessaysandreflections.pdf'
         data = request.get_json()
         print(data)
-        # scrapeText = wiki_scrape(data['link'])
-        # lines = convertFile(SumariFileName, data['line'])
-        return json.dumps({'Status': 'success', 'recived': 'yes'})
+        # print(data['line'])
+        # scrapeText = data['data']
+        # temp = StoreText(scrapeText, data['line'])
+        # preProcessedData = temp[0]
+        # FinalSummary = temp[1]
+        return json.dumps({'Status': 'success', 'preprocessed': 'preProcessedData', 'summary': 'FinalSummary'})
     except Exception as e:
         return json.dumps({'Status': 'fail', 'error': e})
 
 # Accept total range
 @app.route('/api/v1/range', methods=['POST'])
-# @cross_origin()
-def perProcessing():
+def ranges():
     try:
-        global SumariFileName
+        global SummaryFileName
         global preProcessedData
+        global scrapeText
+        global FinalSummary
+        # SummaryFileName = './uploadedFiles/Animals.pdf'
         data = request.get_json()
-        line = wiki_scrape(data['lines'])
-        # line = request.data
-        # preProcessedData = convertFile(SumariFileName, line)
-        if summary == 'error':
-            return json.dumps({'Status': 'fail', 'error': 'some error'})
-        else:    
-            return json.dumps({'Status': 'success', 'recived': 'yes'})
+        print(data)
+        if data['wiki'] == 'no':
+            print('pdf')
+            temp = convertFile(SummaryFileName, data['line'])
+        else:
+            print('url')
+            temp = optimizeWiki(scrapeText, data['line'])            
+        preProcessedData = temp[0]
+        FinalSummary = temp[1]
+        return json.dumps({'Status': 'success', 'preprocessed': preProcessedData, 'summary': FinalSummary})
+    except Exception as e:
+        return json.dumps({'Status': 'fail', 'error': e})
+
+# Wiki sumary
+@app.route('/api/v1/sumarizeWiki', methods=['POST'])
+def sumarizeWiki():
+    try:
+        global preProcessedData
+        global FinalSummary
+        data = request.get_json()
+        temp = StoreText(data['data'])
+        preProcessedData = temp[0]
+        FinalSummary = temp[1]
+        if (preProcessedData != ''):
+            return json.dumps({'Status': 'success', 'preprocessed': preProcessedData, 'summary': FinalSummary})
+        else:
+            return json.dumps({'Status': 'fail', 'error': 'no data avilable'})
     except Exception as e:
         return json.dumps({'Status': 'fail', 'error': e})
 
