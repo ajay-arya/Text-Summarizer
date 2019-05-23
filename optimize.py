@@ -22,7 +22,7 @@ def modify(text):
     global data
     text = text.replace('\n', ' ').replace('\r', '').replace('  ', ' ')
     text = re.sub('[^ .a-zA-Z0-9]', '', text)
-    text = re.sub(' +', ' ', text)
+    text = re.sub(' +', ' ', text) 
     data[0] = text
     return(store(text, './files/preprosed.txt'))
 
